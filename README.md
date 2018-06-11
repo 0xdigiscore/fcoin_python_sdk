@@ -17,9 +17,4 @@ Fcoin
 然后直接运行python robot.py就可以了
 ```
 
-##### 注册
-
-没有注册fcoin的可以通过以下地址注册
-
-<https://www.fcoin.com/i/6DmXE> 
 
