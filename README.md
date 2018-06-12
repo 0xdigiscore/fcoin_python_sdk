@@ -14,7 +14,7 @@ Fcoin
 
 ```
 这个脚本需要python2或者python3环境
-然后直接运行python robot.py就可以了
+然后直接运行python app.py就可以了
 ```
 
 
