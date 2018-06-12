@@ -1,6 +1,9 @@
+
+#!-*-coding:utf-8 -*-
+#@TIME    : 2018/5/30/0030 15:18
+#@Author  : linfeng
 import math
 import time
-import talib
 import numpy as np
 from fcoin3 import Fcoin
 from collections import defaultdict
