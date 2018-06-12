@@ -7,28 +7,13 @@ import time
 from config import api_key
 from config import api_secret
 from utils import trunc
-
+from balance import balance
+from collections import defaultdict
 import datetime
 import schedule
 import random
 # 初始化
 fcoin = Fcoin()
-
-
-# 查询账户余额
-def get_balance_action(this_symbol):
-    balance_info = fcoin.get_balance()
-    if not balance_info:
-        return
-    if this_symbol == 'btc':
-        balance = balance_info['data'][2]
-        label = 'BTC'
-    elif this_symbol == 'eth':
-        balance = balance_info['data'][4]
-        label = 'ETH'
-    elif this_symbol == 'usdt':
-        balance = balance_info['data'][7]
-        label = 'USDT' 
 
 # 获取订单列表
 def get_order_list(this_symbol, this_states):
@@ -50,7 +35,8 @@ def get_order_list(this_symbol, this_states):
 def get_order_list_first(this_symbol, this_states):
     order_list = fcoin.list_orders(symbol=this_symbol, states=this_states)
     
-    if order_list is not None and len(order_list['data']):
+    print('orderlist',order_list)
+    if len(order_list['data']):
         order_item = order_list['data'][0]
         if order_item and this_states == submitted:
             print('发现未成交订单')
@@ -78,8 +64,10 @@ def get_order_list_first(this_symbol, this_states):
                     else:
                         sell_action(symbol, now_price, amount,order_item)    
     else:
+        now_price = get_ticker(symbol)
+        amount = get_avaliable_amount(now_price,'buy')
+        buy_action(symbol, now_price, amount,0)    
         get_order_list_first(this_symbol, filled)
-
 
 # 查询订单
 def check_order_state(this_order_id):
@@ -96,11 +84,7 @@ def buy_action(this_symbol, this_price, this_amount,order_item):
     buy_order_id = buy_result['data']
     if buy_order_id:
         print('买单', this_price, '价格成功委托', '订单ID', buy_order_id)
-
-    # 输出订单信息
-    # print(fcoin.get_order(buy_order_id))
     return buy_order_id
-
 
 # 卖操作
 def sell_action(this_symbol, this_price, this_amount,order_item):
@@ -114,9 +98,18 @@ def sell_action(this_symbol, this_price, this_amount,order_item):
     print(fcoin.get_order(sell_order_id))
     return sell_order_id
 
+#获取余额
+def get_blance(self):
+    dic_blance = defaultdict(lambda: None)
+    success, data = self.fcoin.get_balance()
+    if success:
+        for item in data['data']:
+            dic_blance[item['currency']] = balance(float(item['available']), float(item['frozen']),float(item['balance']))
+    return dic_blance    
+
     
 def get_avaliable_amount(this_price,type='buy') :
-    ft_num = float(fcoin.get_coin_balance('ft'))
+    ft_num = float(fcoin.get_coin_balance('eth'))
     usdt_num = float(fcoin.get_coin_balance('usdt'))
 
     if ft_num < 2  or usdt_num < 2:
@@ -124,15 +117,15 @@ def get_avaliable_amount(this_price,type='buy') :
     else:
         avalibal_amount = 2       
     if type == 'buy':
-        
         if avalibal_amount == 0:
-            sell_action('ftusdt',this_price,trunc(ft_num * 0.6,2),0)
-        avalibal_amount = trunc(usdt_num / this_price,0)
+            sell_action('ethusdt',this_price,trunc(ft_num * 0.6,2),0)
+        avalibal_amount = trunc(usdt_num / this_price * 0.6,0)
+        
         print('可提的最大数量',avalibal_amount)
     else:
         if avalibal_amount == 0:
-            buy_action('ftusdt',this_price,trunc(usdt_num * 0.6,2),0)
-        avalibal_amount = trunc(ft_num * this_price,0 )
+            buy_action('ethusdt',this_price,trunc(usdt_num * 0.6,2),0)
+        avalibal_amount = trunc(ft_num * this_price * 0.6,0 )
         print('可卖的最大数量',avalibal_amount)
     return avalibal_amount
 
@@ -161,7 +154,7 @@ fcoin.auth(api_key, api_secret)
 
 print('开始买卖')
 # 交易类型
-symbol = 'ftusdt'
+symbol = 'ethusdt'
 # 金额
 amount = 200
 # 已成交
@@ -170,15 +163,17 @@ filled = 'filled'
 submitted = 'submitted'
 
 
+
+
 def buyTask():
     # 获取委托订单列表
     get_order_list_first(symbol, submitted)
 
 def run():
-    schedule.every(3).seconds.do(buyTask)
+    schedule.every(20).seconds.do(buyTask)
     while True:
         schedule.run_pending()
-        time.sleep(3)
+        time.sleep(20)
 
 # 守护进程
 if __name__ == '__main__':
