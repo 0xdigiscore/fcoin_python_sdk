@@ -1,9 +1,9 @@
 #! /bin/bash
-pidof app.py # 检测程序是否运行
-while [ $? -ne 0 ]    # 判断程序上次运行是否正常结束
+pidof app.py 
+while [ $? -ne 0 ]   
 do
     echo "Process exits with errors! Restarting!"
-    python3 robot.py    #重启程序
+    python app.py   
 done
 
 echo "process ends!"
