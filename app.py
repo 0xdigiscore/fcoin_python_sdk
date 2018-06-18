@@ -21,7 +21,7 @@ class app():
         self.order_id = None
         self.dic_balance = defaultdict(lambda: None)
         self.time_order = time.time()
-        self.oldprice = 0.0
+        self.oldprice = 1.0
 
     def digits(self, num, digit):
         site = pow(10, digit)
