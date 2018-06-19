@@ -62,7 +62,7 @@ class app():
         print('usdt_all_now  has ....', usdt.balance+self.usdt_sxf, 'ft_all_now has ...', ft.balance+self.ft_sxf)
 
 
-        if not order_list or len(order_list) < 3:
+        if not order_list or len(order_list) < 2:
             if usdt and abs(price/self.oldprice[len(self.oldprice)-2]-1)<0.02:
                 if price>self.oldprice[len(self.oldprice)-2]:
                     amount = self.digits(usdt.available / price * 0.25, 2)
@@ -87,13 +87,13 @@ class app():
         else:
             print('system busy')
             if len(order_list) >= 1:
-                data=self.fcoin.cancel_order(order_list[0]['id'])
-                print(order_list[0])
+                data=self.fcoin.cancel_order(order_list[len(order_list)-1]['id'])
+                print(order_list[len(order_list)-1])
                 if data:
-                    if order_list[0]['side'] == 'buy' and order_list[0]['symbol'] == 'ftusdt':
-                        self.ft_sxf -= float(order_list[0]['amount'])*0.001
-                    elif order_list[0]['side'] == 'sell' and order_list[0]['symbol'] == 'ftusdt':
-                        self.usdt_sxf -= float(order_list[0]['amount'])*float(order_list[0]['price'])*0.001
+                    if order_list[len(order_list)-1]['side'] == 'buy' and order_list[len(order_list)-1]['symbol'] == 'ftusdt':
+                        self.ft_sxf -= float(order_list[len(order_list)-1]['amount'])*0.001
+                    elif order_list[len(order_list)-1]['side'] == 'sell' and order_list[len(order_list)-1]['symbol'] == 'ftusdt':
+                        self.usdt_sxf -= float(order_list[len(order_list)-1]['amount'])*float(order_list[len(order_list)-1]['price'])*0.001
         
         
 
@@ -104,7 +104,7 @@ class app():
                 print('succes')
             except:
                 print('err')
-            time.sleep(1)
+            time.sleep(5)
 
 
 
