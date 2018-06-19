@@ -22,6 +22,9 @@ class app():
         self.dic_balance = defaultdict(lambda: None)
         self.time_order = time.time()
         self.oldprice = self.digits(self.get_ticker(),6)
+        self.usdt_sxf=0.0
+        self.ft_sxf=0.0
+        self.begin_balance=self.get_blance()
 
     def digits(self, num, digit):
         site = pow(10, digit)
@@ -38,7 +41,6 @@ class app():
     def get_blance(self):
         dic_blance = defaultdict(lambda: None)
         data = self.fcoin.get_balance()
-        print(data)
         if data:
             for item in data['data']:
                 dic_blance[item['currency']] = balance(float(item['available']), float(item['frozen']),float(item['balance']))
@@ -49,13 +51,17 @@ class app():
 
         ft = self.dic_balance['ft']
 
-        usdt = self.dic_balance['usdt']
-        print('usdt  has ....', usdt.available, 'ft has ...', ft.available)
+        usdt = self.dic_balance['usdt']   
+        print('usdt  has ....', usdt.balance, 'ft has ...', ft.balance)
+        print('usdt_sxf  has ....', self.usdt_sxf, 'ft_sxf has ...', self.ft_sxf)
+        print('usdt_all_begin  has ....', self.begin_balance['usdt'].balance+self.usdt_sxf, 'ft_all_begin has ...', self.begin_balance['ft'].balance+self.ft_sxf)
+        print('usdt_all_now  has ....', usdt.balance+self.usdt_sxf, 'ft_all_now has ...', ft.balance+self.ft_sxf)
+   
+        
         price = self.digits(self.get_ticker(),6)
 
         order_list = self.fcoin.list_orders(symbol=self.symbol,states='submitted')['data']
 
-        print('order list',order_list)
         if not order_list or len(order_list) < 3:
             if usdt and abs(price/self.oldprice-1)<0.02:
                 if price>self.oldprice:
@@ -64,6 +70,7 @@ class app():
                         data = self.fcoin.buy(self.symbol, price, amount)
                         if data:
                             print('buy success',data)
+                            self.ft_sxf += amount*0.001
                             self.order_id = data['data']
                             self.time_order = time.time()
                 else:
@@ -71,6 +78,7 @@ class app():
                         amount = self.digits(ft.available * 0.25, 2)
                         data = self.fcoin.sell(self.symbol, price, amount)
                         if data:
+                            self.usdt_sxf += amount*price*0.001
                             self.time_order = time.time()
                             self.order_id = data['data']
                             print('sell success')
@@ -80,8 +88,14 @@ class app():
             print('system busy')
             order_list = self.fcoin.list_orders(symbol=self.symbol,states='submitted')['data']
             if len(order_list) >= 1:
-                self.fcoin.cancel_order(order_list[0]['id'])
+                data=self.fcoin.cancel_order(order_list[0]['id'])
+                if data:
+                    if order_list[0]['side'] == 'buy' and order_list[0]['symbol'] == 'ftusdt':
+                        self.ft_sxf -= float(order_list[0]['date']['amount'])*0.001
+                    elif order_list[0]['side'] == 'sell' and order_list[0]['symbol'] == 'ftusdt':
+                        self.usdt_sxf -= float(order_list[0]['amount'])*float(order_list[0]['price'])*0.001
         self.oldprice=price
+        
 
     def loop(self):
         while True:
