@@ -20,7 +20,7 @@ class Fcoin():
         """request public url"""
         r_url = self.base_url + api_url
         try:
-            r = requests.request(method, r_url, params=payload)
+            r = requests.request(method, r_url, params=payload,timeout=3)
             r.raise_for_status()
         except requests.exceptions.HTTPError as err:
             print(err)
@@ -60,11 +60,10 @@ class Fcoin():
             'FC-ACCESS-KEY': self.key,
             'FC-ACCESS-SIGNATURE': signature,
             'FC-ACCESS-TIMESTAMP': timestamp
-
         }
 
         try:
-            r = requests.request(method, full_url, headers = headers, json=payload)
+            r = requests.request(method, full_url, headers = headers, json=payload,timeout=5)
 
             r.raise_for_status()
         except requests.exceptions.HTTPError as err:
