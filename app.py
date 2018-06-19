@@ -21,7 +21,7 @@ class app():
         self.order_id = None
         self.dic_balance = defaultdict(lambda: None)
         self.time_order = time.time()
-        self.oldprice = self.digits(self.get_ticker(),6)
+        self.oldprice = [self.digits(self.get_ticker(),6)]
         self.usdt_sxf=0.0
         self.ft_sxf=0.0
         self.begin_balance=self.get_blance()
@@ -47,6 +47,10 @@ class app():
         return dic_blance
 
     def process(self):
+        price = self.digits(self.get_ticker(),6)
+        
+        order_list = self.fcoin.list_orders(symbol=self.symbol,states='submitted')['data']     
+        
         self.dic_balance = self.get_blance()
 
         ft = self.dic_balance['ft']
@@ -56,15 +60,11 @@ class app():
         print('usdt_sxf  has ....', self.usdt_sxf, 'ft_sxf has ...', self.ft_sxf)
         print('usdt_begin  has ....', self.begin_balance['usdt'].balance, 'ft_begin has ...', self.begin_balance['ft'].balance)
         print('usdt_all_now  has ....', usdt.balance+self.usdt_sxf, 'ft_all_now has ...', ft.balance+self.ft_sxf)
-   
-        
-        price = self.digits(self.get_ticker(),6)
 
-        order_list = self.fcoin.list_orders(symbol=self.symbol,states='submitted')['data']
 
         if not order_list or len(order_list) < 3:
-            if usdt and abs(price/self.oldprice-1)<0.02:
-                if price>self.oldprice:
+            if usdt and abs(price/self.oldprice[len(self.oldprice)-2]-1)<0.02:
+                if price>self.oldprice[len(self.oldprice)-2]:
                     amount = self.digits(usdt.available / price * 0.25, 2)
                     if amount > 5:
                         data = self.fcoin.buy(self.symbol, price, amount)
@@ -86,15 +86,15 @@ class app():
                 print('error')
         else:
             print('system busy')
-            order_list = self.fcoin.list_orders(symbol=self.symbol,states='submitted')['data']
             if len(order_list) >= 1:
                 data=self.fcoin.cancel_order(order_list[0]['id'])
+                print(order_list[0])
                 if data:
                     if order_list[0]['side'] == 'buy' and order_list[0]['symbol'] == 'ftusdt':
-                        self.ft_sxf -= float(order_list[0]['date']['amount'])*0.001
+                        self.ft_sxf -= float(order_list[0]['amount'])*0.001
                     elif order_list[0]['side'] == 'sell' and order_list[0]['symbol'] == 'ftusdt':
                         self.usdt_sxf -= float(order_list[0]['amount'])*float(order_list[0]['price'])*0.001
-        self.oldprice=price
+        
         
 
     def loop(self):
