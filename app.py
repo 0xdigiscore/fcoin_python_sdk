@@ -52,9 +52,9 @@ class app():
         ft = self.dic_balance['ft']
 
         usdt = self.dic_balance['usdt']   
-        print('usdt  has ....', usdt.balance, 'ft has ...', ft.balance)
+        print('usdt_now  has ....', usdt.balance, 'ft_now has ...', ft.balance)
         print('usdt_sxf  has ....', self.usdt_sxf, 'ft_sxf has ...', self.ft_sxf)
-        print('usdt_all_begin  has ....', self.begin_balance['usdt'].balance+self.usdt_sxf, 'ft_all_begin has ...', self.begin_balance['ft'].balance+self.ft_sxf)
+        print('usdt_begin  has ....', self.begin_balance['usdt'].balance, 'ft_begin has ...', self.begin_balance['ft'].balance)
         print('usdt_all_now  has ....', usdt.balance+self.usdt_sxf, 'ft_all_now has ...', ft.balance+self.ft_sxf)
    
         
