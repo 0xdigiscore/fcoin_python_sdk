@@ -91,7 +91,7 @@ class app():
                 print(order_list[0])
                 if data:
                     if order_list[0]['side'] == 'buy' and order_list[0]['symbol'] == 'ftusdt':
-                        self.ft_sxf -= float(order_list[0]['date']['amount'])*0.001
+                        self.ft_sxf -= float(order_list[0]['amount'])*0.001
                     elif order_list[0]['side'] == 'sell' and order_list[0]['symbol'] == 'ftusdt':
                         self.usdt_sxf -= float(order_list[0]['amount'])*float(order_list[0]['price'])*0.001
         
