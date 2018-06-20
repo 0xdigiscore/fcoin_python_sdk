@@ -24,7 +24,7 @@ class app():
         self.socket_sxf=0.0
         self.blc_sxf=0.0
         self.begin_balance=self.get_blance()
-        
+
     def get_prices(self):
         i=2
         prices=[]
@@ -56,30 +56,30 @@ class app():
 
     def process(self):
         price = self.digits(self.get_ticker(),6)
-        
+
         self.oldprice.append(price)
-        
+
         p1=self.oldprice[len(self.oldprice)-2]
         p2=self.oldprice[len(self.oldprice)-3]
-        
+
         self.dic_balance = self.get_blance()
 
         socket = self.dic_balance[config.socket]
 
-        blc = self.dic_balance[config.blc]  
-        
+        blc = self.dic_balance[config.blc]
+
         print(config.blc+'_now  has ....', blc.balance, config.socket+'_now has ...', socket.balance)
         print(config.blc+'_sxf  has ....', self.blc_sxf, config.socket+'_sxf has ...', self.socket_sxf)
         print(config.blc+'_begin  has ....', self.begin_balance[config.blc].balance, config.socket+'_begin has ...', self.begin_balance[config.socket].balance)
         print(config.blc+'_all_now  has ....', blc.balance+self.blc_sxf, config.socket+'_all_now has ...', socket.balance+self.socket_sxf)
 
-        order_list = self.fcoin.list_orders(symbol=self.symbol,states='submitted')['data'] 
+        order_list = self.fcoin.list_orders(symbol=self.symbol,states='submitted')['data']
 
         if not order_list or len(order_list) < 2:
             if blc and abs(price/self.oldprice[len(self.oldprice)-2]-1)<0.02:
                 if price*2>p1+p2:
                     amount = self.digits(blc.available / price * 0.25, 2)
-                    if amount > 5:
+                    if amount > 0:
                         data = self.fcoin.buy(self.symbol, price, amount)
                         if data:
                             print('buy success',data)
@@ -87,7 +87,7 @@ class app():
                             self.order_id = data['data']
                             self.time_order = time.time()
                 else:
-                    if  float(socket.available) * 0.25 > 5:
+                    if  float(socket.available) * 0.25 > 0:
                         amount = self.digits(socket.available * 0.25, 2)
                         data = self.fcoin.sell(self.symbol, price, amount)
                         if data:
@@ -107,8 +107,8 @@ class app():
                         self.socket._sxf -= float(order_list[len(order_list)-1]['amount'])*0.001
                     elif order_list[len(order_list)-1]['side'] == 'sell' and order_list[len(order_list)-1]['symbol'] == self.symbol:
                         self.blc_sxf -= float(order_list[len(order_list)-1]['amount'])*float(order_list[len(order_list)-1]['price'])*0.001
-        
-        
+
+
 
     def loop(self):
         while True:
