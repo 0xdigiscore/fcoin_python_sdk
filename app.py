@@ -117,7 +117,7 @@ class app():
                 print('succes')
             except:
                 print('err')
-            time.sleep(5)
+            time.sleep(2)
 
 
 
